@@ -34,9 +34,6 @@ io.on('connection', function(socket) {
 
     console.log('client connected');
 
-
- 
-
     socket.on('disconnect', function() {
         console.log('client disconnected');
     });
@@ -54,6 +51,7 @@ io.on('connection', function(socket) {
             socketIdPlayer2 = socket.id;
         }
         if (whichPlayer != -1) {
+            console.log('welcome-to-the-play ' + whichPlayer);
             io.to(socket.id).emit('welcome-to-the-play', whichPlayer);
         }
     });
@@ -71,27 +69,16 @@ io.on('connection', function(socket) {
     });
     socket.on('I-lost', function(player) {
         console.log('Player ' + player + ' lost');
-        if (player == 1) {
-            socketIdPlayer1 = '';
-        } else if (player == 2) {
-            socketIdPlayer2 = '';
-        }
+        socketIdPlayer1 = '';
+        socketIdPlayer2 = '';
+        io.emit('Gamefinished', player);
     });
-
-    
-})
+});
 
 console.log('Port process.env.PORT = ' + process.env.PORT);
 http.listen(process.env.PORT || 80, function() {        // Heroku dynamically assigns a port
     console.log("Server running on heraku port or 80");
 })
-
-/*
-setInterval(syncToClients, 16);
-function syncToClients() {
-    console.log('Ball position sent: ' + ballposition.x + ' ' + ballposition.y);
-    io.emit('ball-position', ballposition);
-}*/
 
 setInterval(makeItLive, 16);
 function makeItLive() {

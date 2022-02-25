@@ -6,13 +6,16 @@
     <style>
     	* { padding: 0; margin: 0; }
     	canvas { background: rgb(202, 209, 212); display: block; margin: 0 auto; }
+        p { text-align: center; font-weight: bold; }
     </style>
 </head>
 <body>
+<div><p>Player 2</p></div>
 <canvas id="myCanvas" width="480" height="640"></canvas>
-<div><label>Timestamp: </label><label id="timestamp">XXXXX</label></div>
+<div><p>Player 1</p></div>
+<div><label>Playernb: </label><label id="playerNb">XXXXX</label></div>
 <div><label>FPS: </label><label id="fps">XXXXX</label></div>
-<div><label>Player: </label><label id="player">XXXXX</label></div>
+<div><label>Info: </label><label id="player">XXXXX</label></div>
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
@@ -28,6 +31,7 @@
     var dy = -3;
 
     var player = -1;    // 1, 2, -1
+    var backgroundText = 'Press SPACE to play! (then: Left/Right)';
 
     var paddleHeight = 10;
     var paddleWidth = 75;
@@ -63,6 +67,7 @@
     };
 
     var syncFromServer = function(position) {
+
         x = position.x;
         y = position.y;
         dx = position.dx;
@@ -73,6 +78,12 @@
     }
     socket.on('welcome-to-the-play', startPlay)
     socket.on('game-position', syncFromServer);
+    socket.on('Gamefinished', function(playerWhoLost) {
+            console.log('Received Gamefinished ' + playerWhoLost);
+            document.getElementById('player').innerText = "Game finished";
+            backgroundText = 'Game finished; player ' + playerWhoLost + " lost!";
+            player = -1;
+        });
 
     // Commands
 
@@ -127,29 +138,22 @@
         ctx.closePath();
     }
 
-    function drawWelcomeText() 
+    function drawBackgroundText() 
     {
         if (player == -1) {
             ctx.font = "16px Arial";
             ctx.fillStyle = "#0095DD";
-            ctx.fillText("Appuie sur ESPACE pour jouer", 130, 300);
+            ctx.fillText(backgroundText, 110, 300);
         }
      
     }
 
     function redraw(timestamp)
     {
-        document.getElementById('timestamp').innerText = timestamp;
+        document.getElementById('playerNb').innerText = player;
         document.getElementById('fps').innerText = 1000 / (timestamp - lastRedrawTimestamp);
         lastRedrawTimestamp = timestamp;
 
-        /*
-        if (timestamp - lastSyncToServer > intervalSyncToServerMs)
-        {
-            syncToServer();
-            lastSyncToServer = timestamp;
-        }
-        */
         draw();
     }
 
@@ -159,22 +163,8 @@
         drawBall();
         drawPaddle(paddlePlayer1X, canvas.height-paddleHeight);
         drawPaddle(paddlePlayer2X, 0);
-        drawWelcomeText();
+        drawBackgroundText();
 
-        /*
-        if(x + dx > canvas.width-ballRadius || x + dx < ballRadius) {
-            dx = -dx;
-        }
-        if(y + dy < ballRadius || y + dy > canvas.height-ballRadius) {
-            dy = -dy;
-        }
-        */
-
-
-        /*
-        x += dx;
-        y += dy;
-        */
 
         if (player == 1) {
 
@@ -182,10 +172,10 @@
                 if(x > paddlePlayer1X && x < paddlePlayer1X + paddleWidth) {
                     // dy = -dy;
                 } else {
+                    document.getElementById('player').innerText = "Aaaarg";
                     socket.emit('I-lost', player);
                     player = -1;
-                    document.getElementById('XXXXX').innerText;
-                    alert("Tu as perdu espèce de gros nul");
+                    backgroundText = 'You have lost, type SPACE to replay'
                     // document.location.reload();
                 }
             }
@@ -205,10 +195,10 @@
                 if(x > paddlePlayer2X && x < paddlePlayer2X + paddleWidth) {
                     // dy = -dy;
                 } else {
+                    document.getElementById('player').innerText = "Aaaarg";
                     socket.emit('I-lost', player);
                     player = -1;
-                    document.getElementById('XXXXX').innerText;
-                    alert("Tu as perdu espèce de gros nul");
+                    backgroundText = 'You have lost, type SPACE to replay'
                     // document.location.reload();
                 }
             }
