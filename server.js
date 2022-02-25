@@ -58,7 +58,7 @@ io.on('connection', function(socket) {
         }
     });
     socket.on('player-position', function(position) {
-        console.log('Player position received: () ' + position.player + ' ' + position.paddleX);
+        // console.log('Player position received: () ' + position.player + ' ' + position.paddleX);
         if (position.player == 1)
         {
             paddlePlayer1X = position.paddleX;
@@ -83,7 +83,7 @@ io.on('connection', function(socket) {
 
 console.log('Port process.env.PORT = ' + process.env.PORT);
 http.listen(process.env.PORT || 80, function() {        // Heroku dynamically assigns a port
-    console.log("Server running on heraku port, 80");
+    console.log("Server running on heraku port or 80");
 })
 
 /*

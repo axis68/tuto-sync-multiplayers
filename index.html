@@ -191,10 +191,10 @@
             }
 
             if(rightPressed && paddlePlayer1X < canvas.width-paddleWidth) {
-                paddlePlayer1X += 7;
+                paddlePlayer1X += 14;
                 syncToServer();
             } else if(leftPressed && paddlePlayer1X > 0) {
-                paddlePlayer1X -= 7;
+                paddlePlayer1X -= 14;
                 syncToServer();
             }
         }
@@ -214,10 +214,10 @@
             }
 
             if(rightPressed && paddlePlayer2X < canvas.width-paddleWidth) {
-                paddlePlayer2X += 7;
+                paddlePlayer2X += 14;
                 syncToServer();
             } else if(leftPressed && paddlePlayer2X > 0) {
-                paddlePlayer2X -= 7;
+                paddlePlayer2X -= 14;
                 syncToServer();
             }
         }
