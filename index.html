@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Tuto Multiplayer</title>
+    <style>
+    	* { padding: 0; margin: 0; }
+    	canvas { background: rgb(202, 209, 212); display: block; margin: 0 auto; }
+    </style>
+</head>
+<body>
+<canvas id="myCanvas" width="480" height="640"></canvas>
+<div><label>Timestamp: </label><label id="timestamp">XXXXX</label></div>
+<div><label>FPS: </label><label id="fps">XXXXX</label></div>
+<div><label>Player: </label><label id="player">XXXXX</label></div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    var socket = io();      // optional: url as argument
+
+    var canvas = document.getElementById("myCanvas");
+    var ctx = canvas.getContext("2d");
+
+    var ballRadius = 10;
+    var x = canvas.width/2;
+    var y = canvas.height-30;
+    var dx = 4;
+    var dy = -3;
+
+    var player = -1;    // 1, 2, -1
+
+    var paddleHeight = 10;
+    var paddleWidth = 75;
+    var paddlePlayer1X = (canvas.width-paddleWidth)/2;
+    var paddlePlayer2X = (canvas.width-paddleWidth)/2;
+
+    var rightPressed = false;
+    var leftPressed = false;
+
+    var intervalSyncToServerMs = 100;
+    var lastRedrawTimestamp = Date.now();
+    var lastSyncToServer = 0;
+   
+
+
+    // Communication with server
+
+    function startPlay(assignedPlayer)
+    {
+        document.getElementById('player').innerText = assignedPlayer;
+        player = assignedPlayer;
+    }
+
+    function syncToServer()
+    {
+        if (player != -1) {
+            
+            socket.emit('player-position', 
+                {
+                    "player": player, "paddleX": GetMyXPaddlePosition()
+                });
+        }
+    };
+
+    var syncFromServer = function(position) {
+        x = position.x;
+        y = position.y;
+        dx = position.dx;
+        dy = position.dy;
+
+        paddlePlayer1X = position.paddlePlayer1X;
+        paddlePlayer2X = position.paddlePlayer2X;
+    }
+    socket.on('welcome-to-the-play', startPlay)
+    socket.on('game-position', syncFromServer);
+
+    // Commands
+
+
+    document.addEventListener("keydown", keyDownHandler, false);
+    document.addEventListener("keyup", keyUpHandler, false);
+    // document.addEventListener("mousemove", mouseMoveHandler, false);
+
+    function keyDownHandler(e) {
+        if(e.key == "Right" || e.key == "ArrowRight") {
+            rightPressed = true;
+        }
+        else if(e.key == "Left" || e.key == "ArrowLeft") {
+            leftPressed = true;
+        }
+        else if (e.keyCode == 32 && player == -1) {
+            document.getElementById('player').innerText = 'wannaplay';
+            socket.emit('wannaplay');
+        }
+
+
+    }
+
+    function keyUpHandler(e) {
+        if(e.key == "Right" || e.key == "ArrowRight") {
+            rightPressed = false;
+        }
+        else if(e.key == "Left" || e.key == "ArrowLeft") {
+            leftPressed = false;
+        }
+    }
+
+
+    // draw content
+
+    function drawBall() 
+    {
+        ctx.beginPath();
+        ctx.arc(x, y, ballRadius, 0, Math.PI*2);
+        ctx.fillStyle = "#FF9500";
+        ctx.fill();
+        ctx.closePath();
+    }
+
+
+    function drawPaddle(x, y)
+    {
+        ctx.beginPath();
+        ctx.rect(x, y, paddleWidth, paddleHeight);
+        ctx.fillStyle = "#0095DD";
+        ctx.fill();
+        ctx.closePath();
+    }
+
+    function drawWelcomeText() 
+    {
+        if (player == -1) {
+            ctx.font = "16px Arial";
+            ctx.fillStyle = "#0095DD";
+            ctx.fillText("Appuie sur ESPACE pour jouer", 130, 300);
+        }
+     
+    }
+
+    function redraw(timestamp)
+    {
+        document.getElementById('timestamp').innerText = timestamp;
+        document.getElementById('fps').innerText = 1000 / (timestamp - lastRedrawTimestamp);
+        lastRedrawTimestamp = timestamp;
+
+        /*
+        if (timestamp - lastSyncToServer > intervalSyncToServerMs)
+        {
+            syncToServer();
+            lastSyncToServer = timestamp;
+        }
+        */
+        draw();
+    }
+
+    function draw()
+    {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBall();
+        drawPaddle(paddlePlayer1X, canvas.height-paddleHeight);
+        drawPaddle(paddlePlayer2X, 0);
+        drawWelcomeText();
+
+        /*
+        if(x + dx > canvas.width-ballRadius || x + dx < ballRadius) {
+            dx = -dx;
+        }
+        if(y + dy < ballRadius || y + dy > canvas.height-ballRadius) {
+            dy = -dy;
+        }
+        */
+
+
+        /*
+        x += dx;
+        y += dy;
+        */
+
+        if (player == 1) {
+
+            if(y + dy > canvas.height-ballRadius) {
+                if(x > paddlePlayer1X && x < paddlePlayer1X + paddleWidth) {
+                    // dy = -dy;
+                } else {
+                    socket.emit('I-lost', player);
+                    player = -1;
+                    document.getElementById('XXXXX').innerText;
+                    alert("Tu as perdu espèce de gros nul");
+                    // document.location.reload();
+                }
+            }
+
+            if(rightPressed && paddlePlayer1X < canvas.width-paddleWidth) {
+                paddlePlayer1X += 7;
+                syncToServer();
+            } else if(leftPressed && paddlePlayer1X > 0) {
+                paddlePlayer1X -= 7;
+                syncToServer();
+            }
+        }
+
+        if (player == 2) {
+
+            if(y + dy < paddleHeight) {
+                if(x > paddlePlayer2X && x < paddlePlayer2X + paddleWidth) {
+                    // dy = -dy;
+                } else {
+                    socket.emit('I-lost', player);
+                    player = -1;
+                    document.getElementById('XXXXX').innerText;
+                    alert("Tu as perdu espèce de gros nul");
+                    // document.location.reload();
+                }
+            }
+
+            if(rightPressed && paddlePlayer2X < canvas.width-paddleWidth) {
+                paddlePlayer2X += 7;
+                syncToServer();
+            } else if(leftPressed && paddlePlayer2X > 0) {
+                paddlePlayer2X -= 7;
+                syncToServer();
+            }
+        }
+
+        requestAnimationFrame(redraw);
+    }
+
+    draw();
+
+    // Private functions
+
+    function GetMyXPaddlePosition() {
+        switch (player) {
+            case 1:
+                return paddlePlayer1X;
+            case 2:
+                return paddlePlayer2X;
+            default:
+                return 0;
+        }
+    }
+
+</script>
+
+</body>
+</html>
