@@ -81,7 +81,7 @@ io.on('connection', function(socket) {
     
 })
 
-Console.log('Port process.env.PORT = ' + process.env.PORT);
+console.log('Port process.env.PORT = ' + process.env.PORT);
 http.listen(process.env.PORT || 80, function() {        // Heroku dynamically assigns a port
     console.log("Server running on heraku port, 80");
 })
