@@ -93,14 +93,18 @@
     };
 
     var syncFromServer = function(position) {
-
+        // ball
         x = position.x;
         y = position.y;
         dx = position.dx;
         dy = position.dy;
 
-        paddlePosition.paddle[0].x = position.paddlePlayer1X;
-        paddlePosition.paddle[1].x = position.paddlePlayer2X;
+        if (player != 1) {
+            paddlePosition.paddle[0].x = position.paddlePlayer1X;
+        }
+        if (player != 2) {
+            paddlePosition.paddle[1].x = position.paddlePlayer2X;
+        }
     }
     socket.on('welcome-to-the-play', startPlay)
     socket.on('game-position', syncFromServer);
