@@ -20,9 +20,6 @@ var ballRadius = 10;
 var paddlePlayer1X = 0;
 var paddlePlayer2X = 0;
 
-
-var clientCounter = 0;
-
 var socketIdPlayer1 = '';
 var socketIdPlayer2 = '';
 
