@@ -25,7 +25,13 @@ var socketIdPlayer2 = '';
 
 app.get("/", function(req, res) {   // means the root path of the url
     res.sendFile(__dirname + '/index.html');
-})
+});
+app.get("/game-objects.js", function(req, res) {
+    res.sendFile(__dirname + '/game-objects.js');
+});
+app.get("/client.js", function(req, res) {      // TODO optimize this
+    res.sendFile(__dirname + '/client.js');
+});
 
 io.on('connection', function(socket) {
 
