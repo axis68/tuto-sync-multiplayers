@@ -13,7 +13,7 @@
 <div><p>Player 2</p></div>
 <canvas id="myCanvas" width="480" height="640"></canvas>
 <div><p>Player 1</p></div>
-<div><label>Playernb: </label><label id="playerNb">XXXXX</label></div>
+<div><label>Latency: </label><label id="latency">XXXXX</label></div>
 <div><label>FPS: </label><label id="fps">XXXXX</label></div>
 <div><label>Info: </label><label id="player">XXXXX</label></div>
 
@@ -115,6 +115,17 @@
             player = -1;
         });
 
+    // Own latency calculation as built-in pong messages are not working
+    var latencyStartTime;
+    var latency;
+    setInterval(function() {            
+        latencyStartTime = Date.now();
+        socket.emit('latency-ping');
+    }, 5000);
+    socket.on('latency-pong', function() {
+        latency = (Date.now() - latencyStartTime) / 2;
+    });
+
     // Commands
 
     document.addEventListener("keydown", keyDownHandler, false);
@@ -179,7 +190,7 @@
 
     function redraw(timestamp)
     {
-        document.getElementById('playerNb').innerText = player;
+        document.getElementById('latency').innerText = latency;
         document.getElementById('fps').innerText = 1000 / (timestamp - lastRedrawTimestamp);
         lastRedrawTimestamp = timestamp;
 

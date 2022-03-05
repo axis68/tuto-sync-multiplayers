@@ -3,8 +3,8 @@ const { Console } = require('console');
 console.log('starting server...');
 
 var app = require('express')();
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
+var server = require('http').Server(app);
+var io = require('socket.io')(server);
 
 var width = 480;
 var height = 640;
@@ -70,12 +70,15 @@ io.on('connection', function(socket) {
         socketIdPlayer2 = '';
         io.emit('Gamefinished', player);
     });
+    socket.on('latency-ping', function() {
+        socket.emit('latency-pong');
+      });
 });
 
 console.log('Port process.env.PORT = ' + process.env.PORT);
-http.listen(process.env.PORT || 80, function() {        // Heroku dynamically assigns a port
+server.listen(process.env.PORT || 80, function() {        // Heroku dynamically assigns a port
     console.log("Server running on heraku port or 80");
-})
+});
 
 setInterval(makeItLive, 16);
 function makeItLive() {
