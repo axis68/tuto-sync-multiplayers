@@ -7,7 +7,6 @@ var ctx = canvas.getContext("2d");
 
 import { Ball } from '/game-objects.js';       // Only possible from a module
 var ball = new Ball(canvas.width/2, canvas.height-30, ctx);
-console.log('balle: ' + ball.x);
 
 var player = -1;    // -1: no player, 1, 2 
 var backgroundText = 'Press SPACE to play! (then: Left/Right)';
