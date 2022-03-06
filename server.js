@@ -20,8 +20,8 @@ var ballRadius = 10;
 var paddlePlayer1X = 0;
 var paddlePlayer2X = 0;
 
-var socketIdPlayer1 = '';
-var socketIdPlayer2 = '';
+var player1 = '';
+var player2 = '';
 
 app.get("/", function(req, res) {
     res.sendFile(__dirname + '/index.html');
@@ -38,18 +38,18 @@ io.on('connection', function(socket) {
     socket.on('disconnect', function() {
         console.log('client disconnected');
     });
-    socket.on('wannaplay', function() {
-        console.log('Client wanna play');
+    socket.on('wannaplay', function(playerName) {
+        console.log('Client wanna play: ' + playerName);
         var whichPlayer = -1;
-        if (socketIdPlayer1 == '')
+        if (player1 == '')
         {
             whichPlayer = 1;
-            socketIdPlayer1 = socket.id;
+            player1 = playerName;
         }
-        else if (socketIdPlayer2 == '')
+        else if (player2 == '')
         {
             whichPlayer = 2;
-            socketIdPlayer2 = socket.id;
+            player2 = playerName;
         }
         if (whichPlayer != -1) {
             console.log('welcome-to-the-play ' + whichPlayer);
@@ -70,9 +70,11 @@ io.on('connection', function(socket) {
     });
     socket.on('I-lost', function(player) {
         console.log('Player ' + player + ' lost');
-        socketIdPlayer1 = '';
-        socketIdPlayer2 = '';
-        io.emit('Gamefinished', player);
+        if (player == 1) {
+            io.emit('Gamefinished', player1);
+        } else {
+            io.emit('Gamefinished', player2);
+        }
     });
     socket.on('latency-ping', function() {
         socket.emit('latency-pong');

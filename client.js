@@ -113,8 +113,15 @@ function keyDownHandler(e) {
         leftPressed = true;
     }
     else if (e.keyCode == 32 && player == -1) {     // Space char
-        document.getElementById('player').innerText = 'wannaplay';
-        socket.emit('wannaplay');
+        let playerName = document.getElementById('playerName').value;
+        console.log(playerName);
+        if (playerName.length == 0) {
+            backgroundText = 'To play please enter a valid player name';
+        } else {
+            document.getElementById('player').innerText = 'wannaplay';
+            socket.emit('wannaplay', playerName);
+        }
+
     }
 }
 
@@ -152,7 +159,7 @@ function drawBackgroundText()
 
 function redraw(timestamp)
 {
-    document.getElementById('latency').innerText = latency;
+    document.getElementById('latency').innerText = latency;     // this may be moved to the latency update
     document.getElementById('fps').innerText = 1000 / (timestamp - lastRedrawTimestamp);
     lastRedrawTimestamp = timestamp;
 
