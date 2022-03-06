@@ -9,12 +9,12 @@ var io = require('socket.io')(server);
 var width = 480;
 var height = 640;
 
+// all this to be replaced with Ball
 var ballposition = { "x": width/2, "y": height/2, "dx": 4, "dy": -3 };
 var ballX = width/2;
 var ballY = height/2;
 var dx = 4;
 var dy = -4;
-
 var ballRadius = 10;
 
 var paddlePlayer1X = 0;
@@ -34,9 +34,7 @@ app.get("/game-objects.js", function(req, res) {
 });
 
 io.on('connection', function(socket) {
-
     console.log('client connected');
-
     socket.on('disconnect', function() {
         console.log('client disconnected');
     });
@@ -88,14 +86,13 @@ server.listen(process.env.PORT || 80, function() {        // Heroku dynamically 
 
 setInterval(makeItLive, 16);
 function makeItLive() {
-
+    // to be refactorized in ball class
     if(ballX + dx > width-ballRadius || ballX + dx < ballRadius) {
         dx = -dx;
     }
     if(ballY + dy < ballRadius || ballY + dy > height-ballRadius) {
         dy = -dy;
     }
-
     ballX += dx;
     ballY += dy;
 

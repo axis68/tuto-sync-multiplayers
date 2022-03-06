@@ -6,7 +6,7 @@ var canvas = document.getElementById("myCanvas");
 var ctx = canvas.getContext("2d");
 
 import { Ball } from '/game-objects.js';       // Only possible from a module
-var ball = new Ball(canvas.width/2, canvas.height-30, ctx);
+var ball = new Ball(canvas.width/2, canvas.height-30);
 
 var player = -1;    // -1: no player, 1, 2 
 var backgroundText = 'Press SPACE to play! (then: Left/Right)';
@@ -48,9 +48,7 @@ var paddlePosition = {
 var rightPressed = false;
 var leftPressed = false;
 
-var intervalSyncToServerMs = 100;
 var lastRedrawTimestamp = Date.now();
-var lastSyncToServer = 0;
 
 // Communication with server
 
@@ -164,7 +162,7 @@ function redraw(timestamp)
 function draw()
 {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ball.drawBall();
+    ball.drawBall(ctx);
     drawPaddle(0);
     drawPaddle(1);
     drawBackgroundText();
