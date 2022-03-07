@@ -1,11 +1,11 @@
 // Javascript module for the client side
+import { Ball } from '/game-objects.js';       // Only possible from a module
 
 console.log('Starting client.js');
 
 var canvas = document.getElementById("myCanvas");
 var ctx = canvas.getContext("2d");
 
-import { Ball } from '/game-objects.js';       // Only possible from a module
 var ball = new Ball(canvas.width/2, canvas.height-30);
 
 var player = -1;    // -1: no player, 1, 2 
@@ -70,7 +70,7 @@ function syncToServer()
 };
 
 var syncFromServer = function(position) {
-    ball.setPosition(position);
+    ball.setJSONPosition(position.ball);
 
     if (player != 1) {
         paddlePosition.paddle[0].x = position.paddlePlayer1X;

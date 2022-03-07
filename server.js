@@ -1,21 +1,20 @@
-const { Console } = require('console');
+// Server as ES6 modules
+import { Ball } from './game-objects.js'; 
+import express from 'express';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
+import * as path from 'path';
 
 console.log('starting server...');
 
-var app = require('express')();
-var server = require('http').Server(app);
-var io = require('socket.io')(server);
+const app = express();
+var server = new createServer(app);
+var io = new Server(server);
 
 var width = 480;
 var height = 640;
 
-// all this to be replaced with Ball
-var ballposition = { "x": width/2, "y": height/2, "dx": 4, "dy": -3 };
-var ballX = width/2;
-var ballY = height/2;
-var dx = 4;
-var dy = -4;
-var ballRadius = 10;
+var ball = new Ball(width/2, height/2);
 
 var paddlePlayer1X = 0;
 var paddlePlayer2X = 0;
@@ -23,6 +22,7 @@ var paddlePlayer2X = 0;
 var player1 = '';
 var player2 = '';
 
+const __dirname = path.resolve(path.dirname(''));
 app.get("/", function(req, res) {
     res.sendFile(__dirname + '/index.html');
 });
@@ -66,7 +66,6 @@ io.on('connection', function(socket) {
         {
             paddlePlayer2X = position.paddleX;
         }
-        ballposition = position;
     });
     socket.on('I-lost', function(player) {
         console.log('Player ' + player + ' lost');
@@ -88,17 +87,8 @@ server.listen(process.env.PORT || 80, function() {        // Heroku dynamically 
 
 setInterval(makeItLive, 16);
 function makeItLive() {
-    // to be refactorized in ball class
-    if(ballX + dx > width-ballRadius || ballX + dx < ballRadius) {
-        dx = -dx;
-    }
-    if(ballY + dy < ballRadius || ballY + dy > height-ballRadius) {
-        dy = -dy;
-    }
-    ballX += dx;
-    ballY += dy;
+    ball.moveNextPosition(width, height);
 
-    io.emit('game-position', { "x": ballX, "y": ballY, "dx": dx, "dy": dy , 
+    io.emit('game-position', { "ball": ball.getJSONPosition(), 
         "paddlePlayer1X": paddlePlayer1X, "paddlePlayer2X": paddlePlayer2X });
-
 }
