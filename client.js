@@ -8,7 +8,6 @@ var ball = new Ball(canvas.width/2, canvas.height-30);
 var player = -1;    // -1: no player, 1, 2 
 var backgroundText = 'Press SPACE to play! (then: Left/Right)';
 
-// to be optimized
 var paddleHeight = 10;
 var paddleWidth = 75;
 var paddles = [
@@ -147,5 +146,4 @@ function draw()
     }
     requestAnimationFrame(redraw);
 }
-
 draw();

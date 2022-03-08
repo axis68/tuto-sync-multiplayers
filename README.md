@@ -11,7 +11,9 @@ Socket.IO provides the messaging mechanism we will use for the communication bet
 As you will see, the realization is straight forward, the result consists in only two files:
 - `server.js`: This is the server-script which is executed on a Node.js web-server. It manages the position of game elements (ball, paddles) and synchronizes the information
   with the clients. Less than 100 lines of code.
-- `index.html`: The client resolves the player-interactions and renders the graphical user interface. Less than 250 lines of code.
+- `index.html`: The HTML page of the client side, defines the "canvas" object and references the module "client.js"
+- `client.js`: The client resolves the player-interactions and renders the graphical user interface. Less than 150 lines of code.
+- `game-objects.js`: Definition of the classes Ball and Paddle. About 100 lines of code.
 
 ## Setting up the development environment
 
