@@ -39,8 +39,67 @@ class Ball {
         this.dx = position.dx;
         this.dy = position.dy;
     }
+};
 
-  };
+const PaddleType = {
+    VerticalUpperSide: 1,
+    VerticalLowerSide: 2
+}
 
-export { Ball };
-console.log('Class Ball defined');
+class Paddle {    
+    constructor(paddleType, x, y) {
+        this.paddleType = paddleType;
+        this.x = x;
+        this.y = y;
+        this.width = 75;
+        this.height = 10;
+    }
+
+    setPosition(position) {
+        this.x = position;
+    }
+
+    drawPaddle(canvasContext) {
+        canvasContext.beginPath();
+        canvasContext.rect(this.x, this.y, this.width, this.height);
+        canvasContext.fillStyle = "#0095DD";
+        canvasContext.fill();
+        canvasContext.closePath();
+    }
+
+    moveRight(canvas) {
+        if (this.x < canvas.width - this.width) {
+            this.x += 14;
+        }
+    }
+
+    moveLeft(canvas) {
+        if (this.x > 0) {
+            this.x -= 14;
+        }
+    }
+
+    isBallOutsidePaddle(ball) {
+        return ball.x < this.x || ball.x > this.x + this.width;
+    }
+    isBallTooHigh(ball) {
+        return ball.y + ball.dy <= this.height;
+    }
+    isBallTooLow(ball, canvas) {
+        return ball.y + ball.dy >= canvas.height - ball.radius;
+    }
+
+    // Check against next ball position
+    willMissBall(ball, canvas) {   
+        switch (this.paddleType) {
+            case PaddleType.VerticalUpperSide:
+                return this.isBallTooHigh(ball) && this.isBallOutsidePaddle(ball);
+            default:
+            case PaddleType.VerticalLowerSide:
+                return this.isBallTooLow(ball, canvas) && this.isBallOutsidePaddle(ball);
+        }
+    }
+}
+
+export { Ball, PaddleType, Paddle };
+console.log('Class Ball, Paddle defined');

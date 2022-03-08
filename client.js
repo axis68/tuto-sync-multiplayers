@@ -1,54 +1,25 @@
 // Javascript module for the client side
-import { Ball } from '/game-objects.js';       // Only possible from a module
+import { Ball, PaddleType, Paddle } from '/game-objects.js';       // Only possible from a module
 
 console.log('Starting client.js');
-
 var canvas = document.getElementById("myCanvas");
 var ctx = canvas.getContext("2d");
-
 var ball = new Ball(canvas.width/2, canvas.height-30);
-
 var player = -1;    // -1: no player, 1, 2 
 var backgroundText = 'Press SPACE to play! (then: Left/Right)';
 
+// to be optimized
 var paddleHeight = 10;
 var paddleWidth = 75;
-var paddleCharacteristics = {
-    "paddle": [
-        {
-            "player": 0,
-            "paddleHeight": 10,
-            "paddleWidth": 75,
-            "defaultX": (canvas.width-paddleWidth)/2,
-            "defaultY": canvas.height-paddleHeight,
-            "moveXPlus": 14,
-        },
-        {
-            "player": 1,
-            "paddleHeight": 10,
-            "paddleWidth": 75,
-            "defaultX": (canvas.width-paddleWidth)/2,
-            "defaultY": 0,
-            "moveXPlus": 14,
-        }
-    ]
-};
-
-var paddlePosition = {
-    "paddle": [
-        {
-            "x": paddleCharacteristics.paddle[0].defaultX
-        },
-        {
-            "x": paddleCharacteristics.paddle[1].defaultX
-        }
-    ]
-};
+var paddles = [
+    new Paddle(PaddleType.VerticalLowerSide, (canvas.width-paddleWidth)/2, canvas.height-paddleHeight),
+    new Paddle(PaddleType.VerticalUpperSide, (canvas.width-paddleWidth)/2, 0)
+];
 
 var rightPressed = false;
 var leftPressed = false;
 
-var lastRedrawTimestamp = Date.now();
+var lastRedrawTimestamp = Date.now();       // FPS
 
 // Communication with server
 
@@ -64,19 +35,18 @@ function syncToServer()
     if (player != -1) {
         socket.emit('player-position', 
             {
-                "player": player, "paddleX": paddlePosition.paddle[player - 1].x
+                "player": player, "paddleX": paddles[player - 1].x
             });
     }
 };
 
 var syncFromServer = function(position) {
     ball.setJSONPosition(position.ball);
-
     if (player != 1) {
-        paddlePosition.paddle[0].x = position.paddlePlayer1X;
+        paddles[0].setPosition(position.paddlePlayer1X);
     }
     if (player != 2) {
-        paddlePosition.paddle[1].x = position.paddlePlayer2X;
+        paddles[1].setPosition(position.paddlePlayer2X);
     }
 }
 socket.on('welcome-to-the-play', startPlay)
@@ -134,19 +104,6 @@ function keyUpHandler(e) {
     }
 }
 
-/// <summary>
-/// paddle: paddle number (0, 1)
-/// </summary>
-function drawPaddle(paddle)
-{
-    ctx.beginPath();
-    ctx.rect(paddlePosition.paddle[paddle].x, paddleCharacteristics.paddle[paddle].defaultY, 
-        paddleCharacteristics.paddle[paddle].paddleWidth, paddleCharacteristics.paddle[paddle].paddleHeight);
-    ctx.fillStyle = "#0095DD";
-    ctx.fill();
-    ctx.closePath();
-}
-
 function drawBackgroundText() 
 {
     if (player == -1) {
@@ -154,7 +111,6 @@ function drawBackgroundText()
         ctx.fillStyle = "#0095DD";
         ctx.fillText(backgroundText, 110, 300);
     }
-    
 }
 
 function redraw(timestamp)
@@ -162,7 +118,6 @@ function redraw(timestamp)
     document.getElementById('latency').innerText = latency;     // this may be moved to the latency update
     document.getElementById('fps').innerText = 1000 / (timestamp - lastRedrawTimestamp);
     lastRedrawTimestamp = timestamp;
-
     draw();
 }
 
@@ -170,28 +125,24 @@ function draw()
 {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ball.drawBall(ctx);
-    drawPaddle(0);
-    drawPaddle(1);
+    paddles[0].drawPaddle(ctx);
+    paddles[1].drawPaddle(ctx);
     drawBackgroundText();
 
     if (player != -1) {
-        var index = player - 1;            
-        if(ball.x <= paddlePosition.paddle[index].x || ball.x >= paddlePosition.paddle[index].x + paddleCharacteristics.paddle[index].paddleWidth) {  // Dangerous zone
-            if ((player == 1 && ball.y + ball.dy > canvas.height - ball.radius)
-                || (player == 2 && ball.y + ball.dy <= paddleCharacteristics.paddle[1].paddleHeight))
-            {
-                document.getElementById('player').innerText = "Aaaarg";
-                socket.emit('I-lost', player);
-                player = -1;
-                backgroundText = 'You have lost, type SPACE to replay'
-            }
+        let index = player - 1;
+        if (paddles[index].willMissBall(ball, canvas))
+        {
+            document.getElementById('player').innerText = "Aaaarg";
+            socket.emit('I-lost', player);
+            player = -1;
+            backgroundText = 'You have lost, type SPACE to replay'
         }
-
-        if(rightPressed && paddlePosition.paddle[index].x < canvas.width - paddleCharacteristics.paddle[index].paddleWidth) {   // Left/Right movement
-            paddlePosition.paddle[index].x = (paddlePosition.paddle[index].x + paddleCharacteristics.paddle[index].moveXPlus);
-        } else if(leftPressed && paddlePosition.paddle[index].x > 0) {
-            paddlePosition.paddle[index].x = (paddlePosition.paddle[index].x - paddleCharacteristics.paddle[index].moveXPlus);       
-        }            
+        if (rightPressed) {
+            paddles[index].moveRight(canvas);
+        } else if (leftPressed) {
+            paddles[index].moveLeft(canvas);
+        }
         syncToServer();
     }
     requestAnimationFrame(redraw);

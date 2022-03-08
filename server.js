@@ -45,8 +45,7 @@ io.on('connection', function(socket) {
         {
             whichPlayer = 1;
             player1 = playerName;
-        }
-        else if (player2 == '')
+        } else if (player2 == '')
         {
             whichPlayer = 2;
             player2 = playerName;
@@ -68,12 +67,14 @@ io.on('connection', function(socket) {
         }
     });
     socket.on('I-lost', function(player) {
-        console.log('Player ' + player + ' lost');
+        // console.log('Player ' + player + ' lost');
         if (player == 1) {
             io.emit('Gamefinished', player1);
         } else {
             io.emit('Gamefinished', player2);
         }
+        player1 = '';
+        player2 = '';
     });
     socket.on('latency-ping', function() {
         socket.emit('latency-pong');
@@ -85,7 +86,7 @@ server.listen(process.env.PORT || 80, function() {        // Heroku dynamically 
     console.log("Server running on heraku port or 80");
 });
 
-setInterval(makeItLive, 16);
+setInterval(makeItLive, 32);
 function makeItLive() {
     ball.moveNextPosition(width, height);
 
