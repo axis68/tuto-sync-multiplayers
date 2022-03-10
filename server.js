@@ -1,5 +1,5 @@
 // Server as ES6 modules
-import { Ball } from './game-objects.js'; 
+import { Border, Ball, PaddleType, Paddle, PlayerScore } from './game-objects.js'; 
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
@@ -16,11 +16,15 @@ var height = 640;
 
 var ball = new Ball(width/2, height/2);
 
-var paddlePlayer1X = 0;
+var paddlePlayer1X = 0;     // obsolete
 var paddlePlayer2X = 0;
 
-var player1 = '';
+var player1 = '';       // obsolete
 var player2 = '';
+var paddles = [
+    new Paddle(PaddleType.VerticalLowerSide, 0, 0),
+    new Paddle(PaddleType.VerticalUpperSide, 0, 0)
+];
 
 const __dirname = path.resolve(path.dirname(''));
 app.get("/", function(req, res) {
@@ -44,11 +48,13 @@ io.on('connection', function(socket) {
         if (player1 == '')
         {
             whichPlayer = 1;
-            player1 = playerName;
+            player1 = playerName;   // obsolete
+            paddles[0].setPlayerName(playerName);
         } else if (player2 == '')
         {
             whichPlayer = 2;
             player2 = playerName;
+            paddles[1].setPlayerName(playerName);
         }
         if (whichPlayer != -1) {
             console.log('welcome-to-the-play ' + whichPlayer);
@@ -59,11 +65,11 @@ io.on('connection', function(socket) {
         // console.log('Player position received: () ' + position.player + ' ' + position.paddleX);
         if (position.player == 1)
         {
-            paddlePlayer1X = position.paddleX;
+            paddlePlayer1X = position.paddleX;  // obsolete
         }
         else
         {
-            paddlePlayer2X = position.paddleX;
+            paddlePlayer2X = position.paddleX;  // obsolete
         }
     });
     socket.on('I-lost', function(player) {
@@ -73,8 +79,10 @@ io.on('connection', function(socket) {
         } else {
             io.emit('Gamefinished', player2);
         }
-        player1 = '';
+        player1 = '';   // obsolete
         player2 = '';
+        paddles[0].resetForNewGame();
+        paddles[1].resetForNewGame();
     });
     socket.on('latency-ping', function() {
         socket.emit('latency-pong');
@@ -88,8 +96,23 @@ server.listen(process.env.PORT || 80, function() {        // Heroku dynamically 
 
 setInterval(makeItLive, 32);
 function makeItLive() {
+    let border = ball.isReachingBorder(width, height);
+    switch (border) {
+        case Border.Bottom: {
+            paddles[0].setScore(paddles[0].score + 1);
+            break;
+        }
+        case Border.Top: {
+            paddles[1].setScore(paddles[0].score + 1);
+            break;
+        }
+    }
+
     ball.moveNextPosition(width, height);
 
-    io.emit('game-position', { "ball": ball.getJSONPosition(), 
-        "paddlePlayer1X": paddlePlayer1X, "paddlePlayer2X": paddlePlayer2X });
+    io.emit('game-position', { "ball": ball.getJSONPosition(),
+        "paddlePlayer1X": paddlePlayer1X,       // obsolete
+        "paddlePlayer1Score": paddles[0].score, 
+        "paddlePlayer2X": paddlePlayer2X,
+        "paddlePlayer2Score": paddles[1].score});
 }
