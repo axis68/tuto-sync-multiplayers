@@ -10,8 +10,8 @@ class Ball {
     constructor(x, y) {
         this.x = x;
         this.y = y;
-        this.dx = 8;
-        this.dy = -8;
+        this.dx = 4;
+        this.dy = -4;
         this.radius = 10;
     }
 
@@ -78,6 +78,7 @@ class Paddle {
         this.width = 75;
         this.height = 10;
         this.score = 0;
+        this.playerName = '';
     }
 
     setPosition(position) {
@@ -90,6 +91,16 @@ class Paddle {
         canvasContext.fillStyle = "#0095DD";
         canvasContext.fill();
         canvasContext.closePath();
+    }
+
+    drawScore(canvasContext) {
+        canvasContext.font = "16px Arial";
+        canvasContext.fillStyle = "#0095DD";
+        let y = this.y;
+        if (this.paddleType == PaddleType.VerticalUpperSide) {
+            y += 16;
+        }
+        canvasContext.fillText(this.score, 20, y);
     }
 
     moveRight(canvas) {
@@ -125,20 +136,21 @@ class Paddle {
         }
     }
 
-    resetForNewGame()
-    {
+    resetForNewGame() {
         this.setPlayerName('');
         this.setScore(0);
     }
 
-    setPlayerName(playerName)
-    {
+    setPlayerName(playerName) {
         this.playerName = playerName;
     }
 
-    setScore(score)
-    {
+    setScore(score) {
         this.score = score;
+    }
+
+    isActive() {
+        return (this.playerName.length > 0);
     }
 }
 

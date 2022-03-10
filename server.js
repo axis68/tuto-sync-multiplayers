@@ -99,11 +99,11 @@ function makeItLive() {
     let border = ball.isReachingBorder(width, height);
     switch (border) {
         case Border.Bottom: {
-            paddles[0].setScore(paddles[0].score + 1);
+            paddles[0].isActive() && paddles[0].setScore(paddles[0].score + 1);
             break;
         }
         case Border.Top: {
-            paddles[1].setScore(paddles[0].score + 1);
+            paddles[1].isActive() && paddles[1].setScore(paddles[0].score + 1);
             break;
         }
     }

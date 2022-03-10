@@ -47,6 +47,8 @@ var syncFromServer = function(position) {
     if (player != 2) {
         paddles[1].setPosition(position.paddlePlayer2X);
     }
+    paddles[0].setScore(position.paddlePlayer1Score);
+    paddles[1].setScore(position.paddlePlayer2Score);
 }
 socket.on('welcome-to-the-play', startPlay)
 socket.on('game-position', syncFromServer);
@@ -124,7 +126,9 @@ function draw()
 {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ball.drawBall(ctx);
+    paddles[0].drawScore(ctx);
     paddles[0].drawPaddle(ctx);
+    paddles[1].drawScore(ctx);
     paddles[1].drawPaddle(ctx);
     drawBackgroundText();
 
