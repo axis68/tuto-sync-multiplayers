@@ -17,11 +17,6 @@ var height = 640;
 
 var ball = new Ball(width/2, height/2);
 
-var paddlePlayer1X = 0;     // obsolete
-var paddlePlayer2X = 0;
-
-var player1 = '';       // obsolete
-var player2 = '';
 var paddles = [
     new Paddle(PaddleType.VerticalLowerSide, 0, 0),
     new Paddle(PaddleType.VerticalUpperSide, 0, 0)
@@ -51,17 +46,13 @@ io.on('connection', function(socket) {
     socket.on('wannaplay', function(playerName) {
         console.log('Client wanna play: ' + playerName);
         let whichPlayer = -1;
-        if (player1 == '')
-        {
+        if (paddles[0].playerName == '') {
             whichPlayer = 1;
-            player1 = playerName;   // obsolete
             paddles[0].setPlayerName(playerName);
-        } else if (player2 == '')
-        {
+        } else if (paddles[1].playerName == '') {
             whichPlayer = 2;
-            player2 = playerName;
             paddles[1].setPlayerName(playerName);
-        }
+        } 
         if (whichPlayer != -1) {
             console.log('welcome-to-the-play ' + whichPlayer);
             io.to(socket.id).emit('welcome-to-the-play', whichPlayer);
@@ -70,34 +61,20 @@ io.on('connection', function(socket) {
     });
     socket.on('player-position', function(position) {
         // console.log('Player position received: () ' + position.player + ' ' + position.paddleX);
-        if (position.player == 1)
-        {
-            paddlePlayer1X = position.paddleX;  // obsolete
-        }
-        else
-        {
-            paddlePlayer2X = position.paddleX;  // obsolete
+        if (position.player > 0) {
+            paddles[position.player - 1].setPosition(position.paddleX);
         }
     });
     socket.on('I-lost', function(player) {
         // console.log('Player ' + player + ' lost');
         hallOfFame.addSingleScore(new SingleScore(paddles[1].playerName, paddles[1].score));
         hallOfFame.addSingleScore(new SingleScore(paddles[0].playerName, paddles[0].score));        
-        if (player == 1) {
-            io.emit('Gamefinished', { "lost": player1, "hallOfFame": JSON.stringify(hallOfFame) });            
-        } else {
-            io.emit('Gamefinished', { "lost": player2, "hallOfFame": JSON.stringify(hallOfFame) });
-        }
-        player1 = '';   // obsolete
-        player2 = '';
+        if (player > 0) {
+            io.emit('Gamefinished', { "lost": paddles[player - 1].playerName, "hallOfFame": JSON.stringify(hallOfFame) });            
+        } 
         paddles[0].resetForNewGame();
         paddles[1].resetForNewGame();
         ball.resetVector();
-
-        // hallOfFame.logHallOfFame();
-        // console.log('--------');
-        // console.log(JSON.stringify(hallOfFame));
-        // console.log('--------');
     });
     socket.on('latency-ping', function() {
         socket.emit('latency-pong');
@@ -132,8 +109,8 @@ function makeItLive() {
     ball.moveNextPosition(width, height);
 
     io.emit('game-position', { "ball": ball.getJSONPosition(),
-        "paddlePlayer1X": paddlePlayer1X,       // obsolete
+        "paddlePlayer1X": paddles[0].x,       // obsolete
         "paddlePlayer1Score": paddles[0].score, 
-        "paddlePlayer2X": paddlePlayer2X,
+        "paddlePlayer2X": paddles[1].x,
         "paddlePlayer2Score": paddles[1].score});
 }
