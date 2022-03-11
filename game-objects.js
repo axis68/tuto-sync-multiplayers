@@ -10,9 +10,13 @@ class Ball {
     constructor(x, y) {
         this.x = x;
         this.y = y;
-        this.dx = 4;
-        this.dy = -4;
         this.radius = 10;
+        this.resetVector();
+    }
+
+    resetVector() {
+        this.dx = 8;
+        this.dy = -8;
     }
 
     drawBall(canvasContext) {
@@ -63,6 +67,12 @@ class Ball {
         this.dx = position.dx;
         this.dy = position.dy;
     }
+
+    increaseSpeed() {
+        this.dx *= 1.1;
+        this.dy *= 1.1;
+    }
+
 };
 
 const PaddleType = {

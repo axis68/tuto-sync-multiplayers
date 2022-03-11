@@ -1,5 +1,6 @@
 // Server as ES6 modules
 import { Border, Ball, PaddleType, Paddle, PlayerScore } from './game-objects.js'; 
+import { HallOfFame, SingleScore } from './hall-of-fame.js';
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
@@ -26,6 +27,8 @@ var paddles = [
     new Paddle(PaddleType.VerticalUpperSide, 0, 0)
 ];
 
+var hallOfFame = new HallOfFame(10);
+
 const __dirname = path.resolve(path.dirname(''));
 app.get("/", function(req, res) {
     res.sendFile(__dirname + '/index.html');
@@ -35,6 +38,9 @@ app.get("/client.js", function(req, res) {
 });
 app.get("/game-objects.js", function(req, res) {
     res.sendFile(__dirname + '/game-objects.js');     // can probably be optimized
+});
+app.get("/hall-of-fame.js", function(req, res) {
+    res.sendFile(__dirname + '/hall-of-fame.js');     // can probably be optimized
 });
 
 io.on('connection', function(socket) {
@@ -74,15 +80,23 @@ io.on('connection', function(socket) {
     });
     socket.on('I-lost', function(player) {
         // console.log('Player ' + player + ' lost');
+        hallOfFame.addSingleScore(new SingleScore(paddles[1].playerName, paddles[1].score));
+        hallOfFame.addSingleScore(new SingleScore(paddles[0].playerName, paddles[0].score));        
         if (player == 1) {
-            io.emit('Gamefinished', player1);
+            io.emit('Gamefinished', { "lost": player1, "hallOfFame": JSON.stringify(hallOfFame) });            
         } else {
-            io.emit('Gamefinished', player2);
+            io.emit('Gamefinished', { "lost": player2, "hallOfFame": JSON.stringify(hallOfFame) });
         }
         player1 = '';   // obsolete
         player2 = '';
         paddles[0].resetForNewGame();
         paddles[1].resetForNewGame();
+        ball.resetVector();
+
+        // hallOfFame.logHallOfFame();
+        // console.log('--------');
+        // console.log(JSON.stringify(hallOfFame));
+        // console.log('--------');
     });
     socket.on('latency-ping', function() {
         socket.emit('latency-pong');
@@ -99,11 +113,17 @@ function makeItLive() {
     let border = ball.isReachingBorder(width, height);
     switch (border) {
         case Border.Bottom: {
-            paddles[0].isActive() && paddles[0].setScore(paddles[0].score + 1);
+            if (paddles[0].isActive()) {
+                paddles[0].setScore(paddles[0].score + 1);
+                ball.increaseSpeed();
+            }
             break;
         }
         case Border.Top: {
-            paddles[1].isActive() && paddles[1].setScore(paddles[0].score + 1);
+            if (paddles[1].isActive()) {
+                paddles[1].setScore(paddles[0].score + 1);
+                ball.increaseSpeed();                
+            }
             break;
         }
     }

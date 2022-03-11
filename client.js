@@ -52,11 +52,25 @@ var syncFromServer = function(position) {
 }
 socket.on('welcome-to-the-play', startPlay)
 socket.on('game-position', syncFromServer);
-socket.on('Gamefinished', function(playerWhoLost) {
+socket.on('Gamefinished', function(result) {
+        let playerWhoLost = result.lost;
         console.log('Received Gamefinished ' + playerWhoLost);
         document.getElementById('player').innerText = "Game finished";
         backgroundText = 'Game finished; player ' + playerWhoLost + " lost!";
         player = -1;
+        console.log(result.hallOfFame);
+        let hallOfFame = JSON.parse(result.hallOfFame);
+        let myList = document.getElementById('halloffame');
+        var child = myList.lastElementChild;
+        while (child) {
+            myList.removeChild(child);
+            child = myList.lastElementChild;
+        }
+        hallOfFame.playerArray.forEach(item => {
+            var li = document.createElement('li');
+            li.innerText = item.player + ": " + item.score;
+            myList.appendChild(li);
+        })
     });
 
 // Own latency calculation as built-in pong messages are not working
