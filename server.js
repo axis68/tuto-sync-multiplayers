@@ -50,7 +50,7 @@ io.on('connection', function(socket) {
     });
     socket.on('wannaplay', function(playerName) {
         console.log('Client wanna play: ' + playerName);
-        var whichPlayer = -1;
+        let whichPlayer = -1;
         if (player1 == '')
         {
             whichPlayer = 1;
@@ -66,6 +66,7 @@ io.on('connection', function(socket) {
             console.log('welcome-to-the-play ' + whichPlayer);
             io.to(socket.id).emit('welcome-to-the-play', whichPlayer);
         }
+        io.emit('new-player-in-game', { "playerNb": whichPlayer, "name": playerName });
     });
     socket.on('player-position', function(position) {
         // console.log('Player position received: () ' + position.player + ' ' + position.paddleX);

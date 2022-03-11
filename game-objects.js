@@ -69,8 +69,8 @@ class Ball {
     }
 
     increaseSpeed() {
-        this.dx *= 1.1;
-        this.dy *= 1.1;
+        this.dx *= 1.05;
+        this.dy *= 1.05;
     }
 
 };

@@ -51,6 +51,9 @@ var syncFromServer = function(position) {
     paddles[1].setScore(position.paddlePlayer2Score);
 }
 socket.on('welcome-to-the-play', startPlay)
+socket.on('new-player-in-game', function(newPlayer) {
+    document.getElementById('player' + newPlayer.playerNb).innerText = "Player " + newPlayer.playerNb  +  " " + newPlayer.name;
+});
 socket.on('game-position', syncFromServer);
 socket.on('Gamefinished', function(result) {
         let playerWhoLost = result.lost;
@@ -67,10 +70,12 @@ socket.on('Gamefinished', function(result) {
             child = myList.lastElementChild;
         }
         hallOfFame.playerArray.forEach(item => {
-            var li = document.createElement('li');
+            let li = document.createElement('li');
             li.innerText = item.player + ": " + item.score;
             myList.appendChild(li);
         })
+        document.getElementById('player1').innerText = "Player1";
+        document.getElementById('player2').innerText = "Player2";
     });
 
 // Own latency calculation as built-in pong messages are not working
