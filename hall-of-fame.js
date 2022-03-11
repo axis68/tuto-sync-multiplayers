@@ -12,7 +12,7 @@ class HallOfFame {
 
         let playerIndex = this.searchPlayerIndexInArray(singleScore.player);
         if (playerIndex != -1) {    // Player already exists
-            this.playerArray[playerIndex].score = singleScore.score;
+            this.playerArray[playerIndex].score = Math.max(this.playerArray[playerIndex].score, singleScore.score);
             this.sortPlayerArrayDescending();
             return;
         }
