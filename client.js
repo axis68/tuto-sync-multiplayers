@@ -47,14 +47,35 @@ var syncFromServer = function(position) {
     if (player != 2) {
         paddles[1].setPosition(position.paddlePlayer2X);
     }
+    paddles[0].setScore(position.paddlePlayer1Score);
+    paddles[1].setScore(position.paddlePlayer2Score);
 }
 socket.on('welcome-to-the-play', startPlay)
+socket.on('new-player-in-game', function(newPlayer) {
+    document.getElementById('player' + newPlayer.playerNb).innerText = "Player " + newPlayer.playerNb  +  " " + newPlayer.name;
+});
 socket.on('game-position', syncFromServer);
-socket.on('Gamefinished', function(playerWhoLost) {
+socket.on('Gamefinished', function(result) {
+        let playerWhoLost = result.lost;
         console.log('Received Gamefinished ' + playerWhoLost);
         document.getElementById('player').innerText = "Game finished";
         backgroundText = 'Game finished; player ' + playerWhoLost + " lost!";
         player = -1;
+        console.log(result.hallOfFame);
+        let hallOfFame = JSON.parse(result.hallOfFame);
+        let myList = document.getElementById('halloffame');
+        var child = myList.lastElementChild;
+        while (child) {
+            myList.removeChild(child);
+            child = myList.lastElementChild;
+        }
+        hallOfFame.playerArray.forEach(item => {
+            let li = document.createElement('li');
+            li.innerText = item.player + ": " + item.score;
+            myList.appendChild(li);
+        })
+        document.getElementById('player1').innerText = "Player1";
+        document.getElementById('player2').innerText = "Player2";
     });
 
 // Own latency calculation as built-in pong messages are not working
@@ -124,7 +145,9 @@ function draw()
 {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ball.drawBall(ctx);
+    paddles[0].drawScore(ctx);
     paddles[0].drawPaddle(ctx);
+    paddles[1].drawScore(ctx);
     paddles[1].drawPaddle(ctx);
     drawBackgroundText();
 
