@@ -55,13 +55,10 @@ socket.on('new-player-in-game', function(newPlayer) {
     document.getElementById('player' + newPlayer.playerNb).innerText = "Player " + newPlayer.playerNb  +  " " + newPlayer.name;
 });
 socket.on('game-position', syncFromServer);
-socket.on('Gamefinished', function(result) {
-        let playerWhoLost = result.lost;
-        console.log('Received Gamefinished ' + playerWhoLost);
-        document.getElementById('player').innerText = "Game finished";
-        backgroundText = 'Game finished; player ' + playerWhoLost + " lost!";
-        player = -1;
-        console.log(result.hallOfFame);
+socket.on('player-lost', function(result) {
+        document.getElementById('player').innerText = "Player lost";
+        backgroundText = 'Player ' + result.whoLost + ' lost!';
+        
         let hallOfFame = JSON.parse(result.hallOfFame);
         let myList = document.getElementById('halloffame');
         var child = myList.lastElementChild;
@@ -74,8 +71,11 @@ socket.on('Gamefinished', function(result) {
             li.innerText = item.player + ": " + item.score;
             myList.appendChild(li);
         })
-        document.getElementById('player1').innerText = "Player1";
-        document.getElementById('player2').innerText = "Player2";
+
+        if (result.playerNbLost == player) {
+            player = -1;
+        }
+        document.getElementById('player' + result.playerNbLost).innerText = "Player1";
     });
 
 // Own latency calculation as built-in pong messages are not working
@@ -87,6 +87,7 @@ setInterval(function() {
 }, 5000);
 socket.on('latency-pong', function() {
     latency = (Date.now() - latencyStartTime) / 2;
+    document.getElementById('latency').innerText = latency;
 });
 
 // Commands
@@ -135,7 +136,6 @@ function drawBackgroundText()
 
 function redraw(timestamp)
 {
-    document.getElementById('latency').innerText = latency;     // this may be moved to the latency update
     document.getElementById('fps').innerText = 1000 / (timestamp - lastRedrawTimestamp);
     lastRedrawTimestamp = timestamp;
     draw();

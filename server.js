@@ -65,16 +65,16 @@ io.on('connection', function(socket) {
             paddles[position.player - 1].setPosition(position.paddleX);
         }
     });
-    socket.on('I-lost', function(player) {
+    socket.on('I-lost', function(playerNb) {
         // console.log('Player ' + player + ' lost');
-        hallOfFame.addSingleScore(new SingleScore(paddles[1].playerName, paddles[1].score));
-        hallOfFame.addSingleScore(new SingleScore(paddles[0].playerName, paddles[0].score));        
-        if (player > 0) {
-            io.emit('Gamefinished', { "lost": paddles[player - 1].playerName, "hallOfFame": JSON.stringify(hallOfFame) });            
+        if (playerNb > 0) {
+            hallOfFame.addSingleScore(new SingleScore(paddles[playerNb - 1].playerName, paddles[playerNb - 1].score));
+            io.emit('player-lost', { "playerNbLost": playerNb, "whoLost": paddles[playerNb - 1].playerName, "hallOfFame": JSON.stringify(hallOfFame) });
+            paddles[playerNb - 1].resetForNewGame();
         } 
-        paddles[0].resetForNewGame();
-        paddles[1].resetForNewGame();
-        ball.resetVector();
+        if (paddles[0].playerName == '' && paddles[1].playerName == '') { // game finished 
+            ball.resetVector();
+        }
     });
     socket.on('latency-ping', function() {
         socket.emit('latency-pong');
@@ -99,7 +99,7 @@ function makeItLive() {
         }
         case Border.Top: {
             if (paddles[1].isActive()) {
-                paddles[1].setScore(paddles[0].score + 1);
+                paddles[1].setScore(paddles[1].score + 1);
                 ball.increaseSpeed();                
             }
             break;

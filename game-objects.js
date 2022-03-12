@@ -15,8 +15,8 @@ class Ball {
     }
 
     resetVector() {
-        this.dx = 8;
-        this.dy = -8;
+        this.dx = 8; // 8;
+        this.dy = -8; // -8;
     }
 
     drawBall(canvasContext) {
