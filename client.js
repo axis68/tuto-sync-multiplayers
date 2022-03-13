@@ -6,7 +6,7 @@ var canvas = document.getElementById("myCanvas");
 var ctx = canvas.getContext("2d");
 var ball = new Ball(canvas.width/2, canvas.height-30);
 var player = -1;    // -1: no player, 1, 2 
-var backgroundText = 'Press SPACE to play! (then: Left/Right)';
+var backgroundText = 'Press arrow UP to play! (then: Left/Right)';
 
 var paddleHeight = 10;
 var paddleWidth = 75;
@@ -103,7 +103,7 @@ function keyDownHandler(e) {
     else if(e.key == "Left" || e.key == "ArrowLeft") {
         leftPressed = true;
     }
-    else if (e.keyCode == 32 && player == -1) {     // Space char
+    else if (e.key == "ArrowUp" && player == -1) {     // Up arrow to start playing
         let playerName = document.getElementById('playerName').value;
         console.log(playerName);
         if (playerName.length == 0) {
@@ -158,7 +158,7 @@ function draw()
             document.getElementById('player').innerText = "Aaaarg";
             socket.emit('I-lost', player);
             player = -1;
-            backgroundText = 'You have lost, type SPACE to replay'
+            backgroundText = 'You have lost, type arrow UP to replay'
         }
         if (rightPressed) {
             paddles[index].moveRight(canvas);
