@@ -14,6 +14,7 @@ var io = new Server(server);
 
 var width = 480;
 var height = 640;
+let glideBarHeight = 60;
 
 var ball = new Ball(width/2, height/2);
 
@@ -88,7 +89,7 @@ server.listen(process.env.PORT || 80, function() {        // Heroku dynamically 
 
 setInterval(makeItLive, 32);
 function makeItLive() {
-    let border = ball.isReachingBorder(width, height);
+    let border = ball.isReachingBorder(width, height - glideBarHeight);
     switch (border) {
         case Border.Bottom: {
             if (paddles[0].isActive()) {
@@ -106,7 +107,7 @@ function makeItLive() {
         }
     }
 
-    ball.moveNextPosition(width, height);
+    ball.moveNextPosition(width, height, glideBarHeight);
 
     io.emit('game-position', { "ball": ball.getJSONPosition(),
         "paddlePlayer1X": paddles[0].x,       // obsolete

@@ -1,17 +1,19 @@
-// Javascript module for the client side
+// Javascript ES6 module for the client side
 import { Ball, PaddleType, Paddle } from '/game-objects.js';       // Only possible from a module
 
 console.log('Starting client.js');
 var canvas = document.getElementById("myCanvas");
 var ctx = canvas.getContext("2d");
+var screenWidth = window.screen.width;
+var glideBarHeight = 60;
 var ball = new Ball(canvas.width/2, canvas.height-30);
 var player = -1;    // -1: no player, 1, 2 
-var backgroundText = 'Press arrow UP to play! (then: Left/Right)';
+var backgroundText = 'Press key arrow UP to play! (then: Left/Right)';
 
 var paddleHeight = 10;
 var paddleWidth = 75;
 var paddles = [
-    new Paddle(PaddleType.VerticalLowerSide, (canvas.width-paddleWidth)/2, canvas.height-paddleHeight),
+    new Paddle(PaddleType.VerticalLowerSide, (canvas.width-paddleWidth)/2, canvas.height-paddleHeight - glideBarHeight),
     new Paddle(PaddleType.VerticalUpperSide, (canvas.width-paddleWidth)/2, 0)
 ];
 
@@ -20,7 +22,7 @@ var leftPressed = false;
 
 var lastRedrawTimestamp = Date.now();       // FPS
 
-// Communication with server
+// Server interaction
 
 var socket = io();      // optional: url as argument
 function startPlay(assignedPlayer)
@@ -91,28 +93,21 @@ socket.on('latency-pong', function() {
 });
 
 // Commands
+document.getElementById('btnStartGame').addEventListener('click', userWannaPlay);
 
 document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
 // document.addEventListener("mousemove", mouseMoveHandler, false);
+canvas.addEventListener("touchmove", handleMove, false);
+canvas.addEventListener("touchend", handleEnd, false);
 
 function keyDownHandler(e) {
     if(e.key == "Right" || e.key == "ArrowRight") {
         rightPressed = true;
-    }
-    else if(e.key == "Left" || e.key == "ArrowLeft") {
+    } else if(e.key == "Left" || e.key == "ArrowLeft") {
         leftPressed = true;
-    }
-    else if (e.key == "ArrowUp" && player == -1) {     // Up arrow to start playing
-        let playerName = document.getElementById('playerName').value;
-        console.log(playerName);
-        if (playerName.length == 0) {
-            backgroundText = 'To play please enter a valid player name';
-        } else {
-            document.getElementById('player').innerText = 'wannaplay';
-            socket.emit('wannaplay', playerName);
-        }
-
+    } else if (e.key == "ArrowUp" && player == -1) {     // Up arrow to start playing
+        userWannaPlay();
     }
 }
 
@@ -122,6 +117,45 @@ function keyUpHandler(e) {
     }
     else if(e.key == "Left" || e.key == "ArrowLeft") {
         leftPressed = false;
+    }
+}
+
+function handleMove(evt) {
+    evt.preventDefault();
+    var touches = evt.changedTouches;
+    if (touches.length > 0 && player > 0) {   // array: one "touch" per finger
+        let paddle = paddles[player - 1];
+        let fingerRelativePositionOnCanvas = (touches[0].screenX / screenWidth) * canvas.width;
+        document.getElementById('player').innerText = touches[0].screenX + " / " + paddles[player - 1].x;
+
+        if (fingerRelativePositionOnCanvas > paddle.x + paddle.width) {
+            rightPressed = true;
+            leftPressed = false;
+        } else  if (fingerRelativePositionOnCanvas < paddle.x) {
+            rightPressed = false;
+            leftPressed = true;
+        } else {
+            rightPressed = false;
+            leftPressed = true;
+        }
+
+    }
+}
+
+function handleEnd(evt) {
+    evt.preventDefault();
+    rightPressed = false;
+    leftPressed = false;
+}
+
+function userWannaPlay() {
+    let playerName = document.getElementById('playerName').value;
+    console.log(playerName);
+    if (playerName.length == 0) {
+        backgroundText = 'To play please enter a valid player name';
+    } else {
+        document.getElementById('player').innerText = 'wannaplay';
+        socket.emit('wannaplay', playerName);
     }
 }
 
@@ -149,11 +183,18 @@ function draw()
     paddles[0].drawPaddle(ctx);
     paddles[1].drawScore(ctx);
     paddles[1].drawPaddle(ctx);
+
+    ctx.beginPath();
+    ctx.rect(0, canvas.height - glideBarHeight, canvas.width, canvas.height);
+    ctx.fillStyle = "#00D3D3";
+    ctx.fill();
+    ctx.closePath();
+
     drawBackgroundText();
 
     if (player != -1) {
         let index = player - 1;
-        if (paddles[index].willMissBall(ball, canvas))
+        if (paddles[index].willMissBall(ball, canvas, 60))
         {
             document.getElementById('player').innerText = "Aaaarg";
             socket.emit('I-lost', player);
@@ -169,4 +210,5 @@ function draw()
     }
     requestAnimationFrame(redraw);
 }
+
 draw();
