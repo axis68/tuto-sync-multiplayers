@@ -134,8 +134,8 @@ function handleTouchMove(evt) {
     evt.preventDefault();
     let touches = evt.changedTouches;
     if (touches.length > 0 && player > 0) {   // array: one "touch" per finger
-        rightPressed = (touches[0].screenX > fingerInitialPositionOnCanvas + 20);
-        leftPressed = (touches[0].screenX < fingerInitialPositionOnCanvas - 20);
+        rightPressed = (touches[0].screenX > fingerInitialPositionOnCanvas + 20) && (paddles[player - 1].x < fingerInitialPositionOnCanvas);
+        leftPressed = (touches[0].screenX < fingerInitialPositionOnCanvas - 20) && (paddles[player - 1].x > fingerInitialPositionOnCanvas);
     }
 }
 
