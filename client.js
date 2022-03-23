@@ -17,6 +17,7 @@ var paddles = [
     new Paddle(PaddleType.VerticalUpperSide, (canvas.width-paddleWidth)/2, 0)
 ];
 
+var fingerRelativePositionOnCanvas = -1;
 var rightPressed = false;
 var leftPressed = false;
 
@@ -120,25 +121,14 @@ function keyUpHandler(e) {
     }
 }
 
-function handleMove(evt) {
+function handleMove(evt) {          // The bug is that this command is only called in case of move
+                                    // The test and change of rightPressed / leftPressed have to be rather done
+                                    // as part of the main loop as long as there is no handleEnd or otherwise
+                                    // check whether/why handleEnd is not called properly
     evt.preventDefault();
     var touches = evt.changedTouches;
     if (touches.length > 0 && player > 0) {   // array: one "touch" per finger
-        let paddle = paddles[player - 1];
-        let fingerRelativePositionOnCanvas = (touches[0].screenX / screenWidth) * canvas.width;
-        document.getElementById('player').innerText = touches[0].screenX + " / " + paddles[player - 1].x;
-
-        if (fingerRelativePositionOnCanvas > paddle.x + paddle.width) {
-            rightPressed = true;
-            leftPressed = false;
-        } else  if (fingerRelativePositionOnCanvas < paddle.x) {
-            rightPressed = false;
-            leftPressed = true;
-        } else {
-            rightPressed = false;
-            leftPressed = true;
-        }
-
+        fingerRelativePositionOnCanvas = (touches[0].screenX / screenWidth) * canvas.width;
     }
 }
 
@@ -146,6 +136,7 @@ function handleEnd(evt) {
     evt.preventDefault();
     rightPressed = false;
     leftPressed = false;
+    fingerRelativePositionOnCanvas = -1;
 }
 
 function userWannaPlay() {
@@ -191,6 +182,22 @@ function draw()
     ctx.closePath();
 
     drawBackgroundText();
+
+    // Handling touch screen
+    if (fingerRelativePositionOnCanvas != -1 && player > 0) {
+        let paddle = paddles[player - 1];
+        // document.getElementById('player').innerText = touches[0].screenX + " / " + paddles[player - 1].x;
+            if (fingerRelativePositionOnCanvas > paddle.x + paddle.width) {
+            rightPressed = true;
+            leftPressed = false;
+        } else  if (fingerRelativePositionOnCanvas < paddle.x) {
+            rightPressed = false;
+            leftPressed = true;
+        } else {
+            rightPressed = false;
+            leftPressed = true;
+        }
+    }
 
     if (player != -1) {
         let index = player - 1;
