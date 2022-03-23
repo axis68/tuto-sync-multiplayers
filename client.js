@@ -8,7 +8,7 @@ var screenWidth = window.screen.width;
 var glideBarHeight = 60;
 var ball = new Ball(canvas.width/2, canvas.height-30);
 var player = -1;    // -1: no player, 1, 2 
-var backgroundText = 'Press key arrow UP to play! (then: Left/Right)';
+var backgroundText = 'Enter a player name and press key UP to play!';
 
 var paddleHeight = 10;
 var paddleWidth = 75;
@@ -17,7 +17,7 @@ var paddles = [
     new Paddle(PaddleType.VerticalUpperSide, (canvas.width-paddleWidth)/2, 0)
 ];
 
-var fingerRelativePositionOnCanvas = -1;
+var fingerInitialPositionOnCanvas = -1;
 var rightPressed = false;
 var leftPressed = false;
 
@@ -99,8 +99,9 @@ document.getElementById('btnStartGame').addEventListener('click', userWannaPlay)
 document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
 // document.addEventListener("mousemove", mouseMoveHandler, false);
-canvas.addEventListener("touchmove", handleMove, false);
-canvas.addEventListener("touchend", handleEnd, false);
+canvas.addEventListener("touchstart", handleTouchStart, false);
+canvas.addEventListener("touchmove", handleTouchMove, false);
+canvas.addEventListener("touchend", handleTouchEnd, false);
 
 function keyDownHandler(e) {
     if(e.key == "Right" || e.key == "ArrowRight") {
@@ -121,19 +122,28 @@ function keyUpHandler(e) {
     }
 }
 
-function handleMove(evt) {
+function handleTouchStart(evt) {
     evt.preventDefault();
-    var touches = evt.changedTouches;
-    if (touches.length > 0 && player > 0) {   // array: one "touch" per finger
-        fingerRelativePositionOnCanvas = (touches[0].screenX / screenWidth) * canvas.width;
+    let touches = evt.changedTouches;
+    if (touches.length > 0 && player > 0) {
+        fingerInitialPositionOnCanvas = touches[0].screenX;
     }
 }
 
-function handleEnd(evt) {
+function handleTouchMove(evt) {
+    evt.preventDefault();
+    let touches = evt.changedTouches;
+    if (touches.length > 0 && player > 0) {   // array: one "touch" per finger
+        rightPressed = (touches[0].screenX > fingerInitialPositionOnCanvas + 20);
+        leftPressed = (touches[0].screenX < fingerInitialPositionOnCanvas - 20);
+    }
+}
+
+function handleTouchEnd(evt) {
     evt.preventDefault();
     rightPressed = false;
     leftPressed = false;
-    fingerRelativePositionOnCanvas = -1;
+    fingerInitialPositionOnCanvas = -1;
 }
 
 function userWannaPlay() {
@@ -174,27 +184,11 @@ function draw()
 
     ctx.beginPath();
     ctx.rect(0, canvas.height - glideBarHeight, canvas.width, canvas.height);
-    ctx.fillStyle = "#00D3D3";
+    ctx.fillStyle = "#E3E3E3";
     ctx.fill();
     ctx.closePath();
 
     drawBackgroundText();
-
-    // Handling touch screen
-    if (fingerRelativePositionOnCanvas != -1 && player > 0) {
-        let paddle = paddles[player - 1];
-        // document.getElementById('player').innerText = touches[0].screenX + " / " + paddles[player - 1].x;
-            if (fingerRelativePositionOnCanvas > paddle.x + paddle.width) {
-            rightPressed = true;
-            leftPressed = false;
-        } else  if (fingerRelativePositionOnCanvas < paddle.x) {
-            rightPressed = false;
-            leftPressed = true;
-        } else {
-            rightPressed = false;
-            leftPressed = true;
-        }
-    }
 
     if (player != -1) {
         let index = player - 1;
