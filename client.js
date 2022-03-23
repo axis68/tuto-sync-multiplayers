@@ -121,10 +121,7 @@ function keyUpHandler(e) {
     }
 }
 
-function handleMove(evt) {          // The bug is that this command is only called in case of move
-                                    // The test and change of rightPressed / leftPressed have to be rather done
-                                    // as part of the main loop as long as there is no handleEnd or otherwise
-                                    // check whether/why handleEnd is not called properly
+function handleMove(evt) {
     evt.preventDefault();
     var touches = evt.changedTouches;
     if (touches.length > 0 && player > 0) {   // array: one "touch" per finger
@@ -201,13 +198,6 @@ function draw()
 
     if (player != -1) {
         let index = player - 1;
-        if (paddles[index].willMissBall(ball, canvas, 60))
-        {
-            document.getElementById('player').innerText = "Aaaarg";
-            socket.emit('I-lost', player);
-            player = -1;
-            backgroundText = 'You have lost, type arrow UP to replay'
-        }
         if (rightPressed) {
             paddles[index].moveRight(canvas);
         } else if (leftPressed) {

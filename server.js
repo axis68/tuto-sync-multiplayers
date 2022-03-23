@@ -66,6 +66,7 @@ io.on('connection', function(socket) {
             paddles[position.player - 1].setPosition(position.paddleX);
         }
     });
+    /*
     socket.on('I-lost', function(playerNb) {
         // console.log('Player ' + player + ' lost');
         if (playerNb > 0) {
@@ -76,7 +77,7 @@ io.on('connection', function(socket) {
         if (paddles[0].playerName == '' && paddles[1].playerName == '') { // game finished 
             ball.resetVector();
         }
-    });
+    });*/
     socket.on('latency-ping', function() {
         socket.emit('latency-pong');
       });
@@ -87,21 +88,41 @@ server.listen(process.env.PORT || 80, function() {        // Heroku dynamically 
     console.log("Server running on heraku port or 80");
 });
 
+function playerLooses(playerNb) {
+    if (playerNb > 0) {
+        hallOfFame.addSingleScore(new SingleScore(paddles[playerNb - 1].playerName, paddles[playerNb - 1].score));
+        io.emit('player-lost', { "playerNbLost": playerNb, "whoLost": paddles[playerNb - 1].playerName, "hallOfFame": JSON.stringify(hallOfFame) });
+        paddles[playerNb - 1].resetForNewGame();
+    } 
+    if (paddles[0].playerName == '' && paddles[1].playerName == '') { // game finished 
+        ball.resetVector();
+    }
+}
+
 setInterval(makeItLive, 32);
 function makeItLive() {
     let border = ball.isReachingBorder(width, height - glideBarHeight);
     switch (border) {
-        case Border.Bottom: {
+        case Border.Bottom: {            
             if (paddles[0].isActive()) {
-                paddles[0].setScore(paddles[0].score + 1);
-                ball.increaseSpeed();
+                if (paddles[0].willMissBall(ball, height - glideBarHeight))
+                {
+                    playerLooses(1);
+                } else {
+                    paddles[0].setScore(paddles[0].score + 1);
+                    ball.increaseSpeed();
+                }
             }
             break;
         }
         case Border.Top: {
             if (paddles[1].isActive()) {
-                paddles[1].setScore(paddles[1].score + 1);
-                ball.increaseSpeed();                
+                if (paddles[1].willMissBall(ball, 0)) {             // duplicated code
+                    playerLooses(2);
+                } else {
+                    paddles[1].setScore(paddles[1].score + 1);
+                    ball.increaseSpeed();  
+                }
             }
             break;
         }

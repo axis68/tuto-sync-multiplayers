@@ -69,8 +69,8 @@ class Ball {
     }
 
     increaseSpeed() {
-        this.dx *= 1.05;
-        this.dy *= 1.05;
+        this.dx *= 1.025;
+        this.dy *= 1.025;
     }
 
 };
@@ -131,18 +131,18 @@ class Paddle {
     isBallTooHigh(ball) {
         return ball.y + ball.dy <= this.height;
     }
-    isBallTooLow(ball, canvas, distanceToBottom) {
-        return ball.y + ball.dy >= canvas.height - distanceToBottom - ball.radius;
+    isBallTooLow(ball, bottomYPosition) {
+        return ball.y + ball.dy >= bottomYPosition - ball.radius;
     }
 
     // Check against next ball position
-    willMissBall(ball, canvas, distanceToBottom) {
+    willMissBall(ball, bottomYPosition) {
         switch (this.paddleType) {
             case PaddleType.VerticalUpperSide:
                 return this.isBallTooHigh(ball) && this.isBallOutsidePaddle(ball);
             default:
             case PaddleType.VerticalLowerSide:
-                return this.isBallTooLow(ball, canvas, distanceToBottom) && this.isBallOutsidePaddle(ball);
+                return this.isBallTooLow(ball, bottomYPosition) && this.isBallOutsidePaddle(ball);
         }
     }
 
