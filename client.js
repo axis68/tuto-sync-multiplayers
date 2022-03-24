@@ -17,7 +17,7 @@ var paddles = [
     new Paddle(PaddleType.VerticalUpperSide, (canvas.width-paddleWidth)/2, 0)
 ];
 
-var fingerInitialPositionOnCanvas = -1;
+var fingerMovedPositionOnCanvas = -1;
 var rightPressed = false;
 var leftPressed = false;
 
@@ -99,7 +99,7 @@ document.getElementById('btnStartGame').addEventListener('click', userWannaPlay)
 document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
 // document.addEventListener("mousemove", mouseMoveHandler, false);
-canvas.addEventListener("touchstart", handleTouchStart, false);
+// canvas.addEventListener("touchstart", handleTouchStart, false);
 canvas.addEventListener("touchmove", handleTouchMove, false);
 canvas.addEventListener("touchend", handleTouchEnd, false);
 
@@ -122,20 +122,15 @@ function keyUpHandler(e) {
     }
 }
 
-function handleTouchStart(evt) {
-    evt.preventDefault();
-    let touches = evt.changedTouches;
-    if (touches.length > 0 && player > 0) {
-        fingerInitialPositionOnCanvas = touches[0].screenX;
-    }
-}
-
 function handleTouchMove(evt) {
     evt.preventDefault();
     let touches = evt.changedTouches;
     if (touches.length > 0 && player > 0) {   // array: one "touch" per finger
-        rightPressed = (touches[0].screenX > fingerInitialPositionOnCanvas + 20) && (paddles[player - 1].x < fingerInitialPositionOnCanvas);
-        leftPressed = (touches[0].screenX < fingerInitialPositionOnCanvas - 20) && (paddles[player - 1].x > fingerInitialPositionOnCanvas);
+        fingerMovedPositionOnCanvas = Math.min(touches[0].screenX - paddles[player - 1].width / 2, 
+            canvas.width - paddles[player - 1].width);
+        if (fingerMovedPositionOnCanvas < 0) {
+            fingerMovedPositionOnCanvas = 0;
+        }
     }
 }
 
@@ -143,7 +138,7 @@ function handleTouchEnd(evt) {
     evt.preventDefault();
     rightPressed = false;
     leftPressed = false;
-    fingerInitialPositionOnCanvas = -1;
+    fingerMovedPositionOnCanvas = -1;
 }
 
 function userWannaPlay() {
@@ -196,6 +191,8 @@ function draw()
             paddles[index].moveRight(canvas);
         } else if (leftPressed) {
             paddles[index].moveLeft(canvas);
+        } else if (fingerMovedPositionOnCanvas != -1) {
+            paddles[index].x = fingerMovedPositionOnCanvas;
         }
         syncToServer();
     }
