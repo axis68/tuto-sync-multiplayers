@@ -14,14 +14,10 @@ var io = new Server(server);
 
 var width = 480;
 var height = 640;
+let glideBarHeight = 60;
 
 var ball = new Ball(width/2, height/2);
 
-var paddlePlayer1X = 0;     // obsolete
-var paddlePlayer2X = 0;
-
-var player1 = '';       // obsolete
-var player2 = '';
 var paddles = [
     new Paddle(PaddleType.VerticalLowerSide, 0, 0),
     new Paddle(PaddleType.VerticalUpperSide, 0, 0)
@@ -51,17 +47,13 @@ io.on('connection', function(socket) {
     socket.on('wannaplay', function(playerName) {
         console.log('Client wanna play: ' + playerName);
         let whichPlayer = -1;
-        if (player1 == '')
-        {
+        if (paddles[0].playerName == '') {
             whichPlayer = 1;
-            player1 = playerName;   // obsolete
             paddles[0].setPlayerName(playerName);
-        } else if (player2 == '')
-        {
+        } else if (paddles[1].playerName == '') {
             whichPlayer = 2;
-            player2 = playerName;
             paddles[1].setPlayerName(playerName);
-        }
+        } 
         if (whichPlayer != -1) {
             console.log('welcome-to-the-play ' + whichPlayer);
             io.to(socket.id).emit('welcome-to-the-play', whichPlayer);
@@ -70,35 +62,22 @@ io.on('connection', function(socket) {
     });
     socket.on('player-position', function(position) {
         // console.log('Player position received: () ' + position.player + ' ' + position.paddleX);
-        if (position.player == 1)
-        {
-            paddlePlayer1X = position.paddleX;  // obsolete
-        }
-        else
-        {
-            paddlePlayer2X = position.paddleX;  // obsolete
+        if (position.player > 0) {
+            paddles[position.player - 1].setPosition(position.paddleX);
         }
     });
-    socket.on('I-lost', function(player) {
+    /*
+    socket.on('I-lost', function(playerNb) {
         // console.log('Player ' + player + ' lost');
-        hallOfFame.addSingleScore(new SingleScore(paddles[1].playerName, paddles[1].score));
-        hallOfFame.addSingleScore(new SingleScore(paddles[0].playerName, paddles[0].score));        
-        if (player == 1) {
-            io.emit('Gamefinished', { "lost": player1, "hallOfFame": JSON.stringify(hallOfFame) });            
-        } else {
-            io.emit('Gamefinished', { "lost": player2, "hallOfFame": JSON.stringify(hallOfFame) });
+        if (playerNb > 0) {
+            hallOfFame.addSingleScore(new SingleScore(paddles[playerNb - 1].playerName, paddles[playerNb - 1].score));
+            io.emit('player-lost', { "playerNbLost": playerNb, "whoLost": paddles[playerNb - 1].playerName, "hallOfFame": JSON.stringify(hallOfFame) });
+            paddles[playerNb - 1].resetForNewGame();
+        } 
+        if (paddles[0].playerName == '' && paddles[1].playerName == '') { // game finished 
+            ball.resetVector();
         }
-        player1 = '';   // obsolete
-        player2 = '';
-        paddles[0].resetForNewGame();
-        paddles[1].resetForNewGame();
-        ball.resetVector();
-
-        // hallOfFame.logHallOfFame();
-        // console.log('--------');
-        // console.log(JSON.stringify(hallOfFame));
-        // console.log('--------');
-    });
+    });*/
     socket.on('latency-ping', function() {
         socket.emit('latency-pong');
       });
@@ -109,31 +88,51 @@ server.listen(process.env.PORT || 80, function() {        // Heroku dynamically 
     console.log("Server running on heraku port or 80");
 });
 
+function playerLooses(playerNb) {
+    if (playerNb > 0) {
+        hallOfFame.addSingleScore(new SingleScore(paddles[playerNb - 1].playerName, paddles[playerNb - 1].score));
+        io.emit('player-lost', { "playerNbLost": playerNb, "whoLost": paddles[playerNb - 1].playerName, "hallOfFame": JSON.stringify(hallOfFame) });
+        paddles[playerNb - 1].resetForNewGame();
+    } 
+    if (paddles[0].playerName == '' && paddles[1].playerName == '') { // game finished 
+        ball.resetVector();
+    }
+}
+
 setInterval(makeItLive, 32);
 function makeItLive() {
-    let border = ball.isReachingBorder(width, height);
+    let border = ball.isReachingBorder(width, height - glideBarHeight);
     switch (border) {
-        case Border.Bottom: {
+        case Border.Bottom: {            
             if (paddles[0].isActive()) {
-                paddles[0].setScore(paddles[0].score + 1);
-                ball.increaseSpeed();
+                if (paddles[0].willMissBall(ball, height - glideBarHeight))
+                {
+                    playerLooses(1);
+                } else {
+                    paddles[0].setScore(paddles[0].score + 1);
+                    ball.increaseSpeed();
+                }
             }
             break;
         }
         case Border.Top: {
             if (paddles[1].isActive()) {
-                paddles[1].setScore(paddles[0].score + 1);
-                ball.increaseSpeed();                
+                if (paddles[1].willMissBall(ball, 0)) {             // duplicated code
+                    playerLooses(2);
+                } else {
+                    paddles[1].setScore(paddles[1].score + 1);
+                    ball.increaseSpeed();  
+                }
             }
             break;
         }
     }
 
-    ball.moveNextPosition(width, height);
+    ball.moveNextPosition(width, height, glideBarHeight);
 
     io.emit('game-position', { "ball": ball.getJSONPosition(),
-        "paddlePlayer1X": paddlePlayer1X,       // obsolete
+        "paddlePlayer1X": paddles[0].x,       // obsolete
         "paddlePlayer1Score": paddles[0].score, 
-        "paddlePlayer2X": paddlePlayer2X,
+        "paddlePlayer2X": paddles[1].x,
         "paddlePlayer2Score": paddles[1].score});
 }

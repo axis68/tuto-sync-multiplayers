@@ -9,11 +9,10 @@ In this tutorial we will learn how to extend it for 2-players using Socket-IO.
 
 Socket.IO provides the messaging mechanism we will use for the communication between a server and 1-2 clients (the players).
 As you will see, the realization is straight forward, the result consists in only two files:
-- `server.js`: This is the server-script which is executed on a Node.js web-server. It manages the position of game elements (ball, paddles) and synchronizes the information
-  with the clients. Less than 100 lines of code.
+- `server.js`: This is the server-script which is executed on a Node.js web-server. It manages the position of game elements (ball, paddles) and synchronizes the information with the clients. 
 - `index.html`: The HTML page of the client side, defines the "canvas" object and references the module "client.js"
-- `client.js`: The client resolves the player-interactions and renders the graphical user interface. Less than 150 lines of code.
-- `game-objects.js`: Definition of the classes Ball and Paddle. About 100 lines of code.
+- `client.js`: The client resolves the player-interactions and renders the graphical user interface.
+- `game-objects.js`: Definition of the classes Ball and Paddle.
 
 ## Setting up the development environment
 

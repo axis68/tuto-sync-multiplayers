@@ -15,8 +15,8 @@ class Ball {
     }
 
     resetVector() {
-        this.dx = 8;
-        this.dy = -8;
+        this.dx = 8; // 8;
+        this.dy = -8; // -8;
     }
 
     drawBall(canvasContext) {
@@ -43,12 +43,12 @@ class Ball {
         }
     }
 
-    moveNextPosition(width, height)
+    moveNextPosition(width, height, distanceToBottom)
     {
         if(this.x + this.dx > width - this.radius || this.x + this.dx < this.radius) {
             this.dx = -this.dx;
         }
-        if(this.y + this.dy < this.radius || this.y + this.dy > height - this.radius) {
+        if(this.y + this.dy < this.radius || this.y + this.dy > height - distanceToBottom - this.radius) {
             this.dy = -this.dy;
         }
         this.x = this.x + this.dx;
@@ -69,8 +69,8 @@ class Ball {
     }
 
     increaseSpeed() {
-        this.dx *= 1.05;
-        this.dy *= 1.05;
+        this.dx *= 1.025;
+        this.dy *= 1.025;
     }
 
 };
@@ -131,18 +131,18 @@ class Paddle {
     isBallTooHigh(ball) {
         return ball.y + ball.dy <= this.height;
     }
-    isBallTooLow(ball, canvas) {
-        return ball.y + ball.dy >= canvas.height - ball.radius;
+    isBallTooLow(ball, bottomYPosition) {
+        return ball.y + ball.dy >= bottomYPosition - ball.radius;
     }
 
     // Check against next ball position
-    willMissBall(ball, canvas) {   
+    willMissBall(ball, bottomYPosition) {
         switch (this.paddleType) {
             case PaddleType.VerticalUpperSide:
                 return this.isBallTooHigh(ball) && this.isBallOutsidePaddle(ball);
             default:
             case PaddleType.VerticalLowerSide:
-                return this.isBallTooLow(ball, canvas) && this.isBallOutsidePaddle(ball);
+                return this.isBallTooLow(ball, bottomYPosition) && this.isBallOutsidePaddle(ball);
         }
     }
 
