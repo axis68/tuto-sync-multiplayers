@@ -67,6 +67,13 @@ io.on('connection', function(socket) {
         }
     });
     /*
+    server.on('la-grosse-triche', function(player) {
+        if (player > 0) {
+            paddles[player - 1].score += 1;
+        }        
+    });*/
+
+    /*
     socket.on('I-lost', function(playerNb) {
         // console.log('Player ' + player + ' lost');
         if (playerNb > 0) {
