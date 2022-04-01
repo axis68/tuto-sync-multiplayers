@@ -5,7 +5,6 @@ import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import * as path from 'path';
-import { Console } from 'console';
 
 console.log('starting server...');
 
@@ -73,7 +72,6 @@ io.on('connection', function(socket) {
             paddles[player - 1].score += 1;
         }        
     });
-
     socket.on('latency-ping', function() {
         socket.emit('latency-pong');
       });
@@ -97,6 +95,7 @@ function playerLooses(playerNb) {
 
 setInterval(makeItLive, 32);
 function makeItLive() {
+    // handle ball interaction
     let border = ball.isReachingBorder(width, height - glideBarHeight);
     switch (border) {
         case Border.Bottom: {            

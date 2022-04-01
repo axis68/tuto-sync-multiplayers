@@ -56,9 +56,9 @@ function syncToServer()
 
 function leGrandTricheur() {
     socket.emit('la-grosse-triche', player);
-}
-s
-socket.on('welcome-to-the-play', startPlay)
+};
+
+socket.on('welcome-to-the-play', startPlay);
 socket.on('new-player-in-game', function(newPlayer) {
     document.getElementById('player' + newPlayer.playerNb).innerText = "Player " + newPlayer.playerNb  +  " " + newPlayer.name;
 });
