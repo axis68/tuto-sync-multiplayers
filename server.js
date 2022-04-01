@@ -66,18 +66,12 @@ io.on('connection', function(socket) {
             paddles[position.player - 1].setPosition(position.paddleX);
         }
     });
-    /*
-    socket.on('I-lost', function(playerNb) {
-        // console.log('Player ' + player + ' lost');
-        if (playerNb > 0) {
-            hallOfFame.addSingleScore(new SingleScore(paddles[playerNb - 1].playerName, paddles[playerNb - 1].score));
-            io.emit('player-lost', { "playerNbLost": playerNb, "whoLost": paddles[playerNb - 1].playerName, "hallOfFame": JSON.stringify(hallOfFame) });
-            paddles[playerNb - 1].resetForNewGame();
-        } 
-        if (paddles[0].playerName == '' && paddles[1].playerName == '') { // game finished 
-            ball.resetVector();
-        }
-    });*/
+    socket.on('la-grosse-triche', function(player) {
+        console.log("La grosse triche de " + player);
+        if (player > 0) {
+            paddles[player - 1].score += 1;
+        }        
+    });
     socket.on('latency-ping', function() {
         socket.emit('latency-pong');
       });
@@ -101,6 +95,7 @@ function playerLooses(playerNb) {
 
 setInterval(makeItLive, 32);
 function makeItLive() {
+    // handle ball interaction
     let border = ball.isReachingBorder(width, height - glideBarHeight);
     switch (border) {
         case Border.Bottom: {            

@@ -26,6 +26,18 @@ var lastRedrawTimestamp = Date.now();       // FPS
 // Server interaction
 
 var socket = io();      // optional: url as argument
+socket.on('game-position', function(position) {
+    ball.setJSONPosition(position.ball);
+    if (player != 1) {
+        paddles[0].setPosition(position.paddlePlayer1X);
+    }
+    if (player != 2) {
+        paddles[1].setPosition(position.paddlePlayer2X);
+    }
+    paddles[0].setScore(position.paddlePlayer1Score);
+    paddles[1].setScore(position.paddlePlayer2Score);
+});
+
 function startPlay(assignedPlayer)
 {
     document.getElementById('player').innerText = assignedPlayer;
@@ -42,22 +54,14 @@ function syncToServer()
     }
 };
 
-var syncFromServer = function(position) {
-    ball.setJSONPosition(position.ball);
-    if (player != 1) {
-        paddles[0].setPosition(position.paddlePlayer1X);
-    }
-    if (player != 2) {
-        paddles[1].setPosition(position.paddlePlayer2X);
-    }
-    paddles[0].setScore(position.paddlePlayer1Score);
-    paddles[1].setScore(position.paddlePlayer2Score);
-}
-socket.on('welcome-to-the-play', startPlay)
+function leGrandTricheur() {
+    socket.emit('la-grosse-triche', player);
+};
+
+socket.on('welcome-to-the-play', startPlay);
 socket.on('new-player-in-game', function(newPlayer) {
     document.getElementById('player' + newPlayer.playerNb).innerText = "Player " + newPlayer.playerNb  +  " " + newPlayer.name;
 });
-socket.on('game-position', syncFromServer);
 socket.on('player-lost', function(result) {
         document.getElementById('player').innerText = "Player lost";
         backgroundText = 'Player ' + result.whoLost + ' lost!';
@@ -110,6 +114,8 @@ function keyDownHandler(e) {
         leftPressed = true;
     } else if (e.key == "ArrowUp" && player == -1) {     // Up arrow to start playing
         userWannaPlay();
+    } else if (e.key == "a") {
+        leGrandTricheur();
     }
 }
 
