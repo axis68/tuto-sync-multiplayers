@@ -5,6 +5,7 @@ import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import * as path from 'path';
+import { Console } from 'console';
 
 console.log('starting server...');
 
@@ -66,25 +67,13 @@ io.on('connection', function(socket) {
             paddles[position.player - 1].setPosition(position.paddleX);
         }
     });
-    /*
-    server.on('la-grosse-triche', function(player) {
+    socket.on('la-grosse-triche', function(player) {
+        console.log("La grosse triche de " + player);
         if (player > 0) {
             paddles[player - 1].score += 1;
         }        
-    });*/
+    });
 
-    /*
-    socket.on('I-lost', function(playerNb) {
-        // console.log('Player ' + player + ' lost');
-        if (playerNb > 0) {
-            hallOfFame.addSingleScore(new SingleScore(paddles[playerNb - 1].playerName, paddles[playerNb - 1].score));
-            io.emit('player-lost', { "playerNbLost": playerNb, "whoLost": paddles[playerNb - 1].playerName, "hallOfFame": JSON.stringify(hallOfFame) });
-            paddles[playerNb - 1].resetForNewGame();
-        } 
-        if (paddles[0].playerName == '' && paddles[1].playerName == '') { // game finished 
-            ball.resetVector();
-        }
-    });*/
     socket.on('latency-ping', function() {
         socket.emit('latency-pong');
       });
