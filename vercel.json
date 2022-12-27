@@ -7,7 +7,7 @@
       // Specify the NPM module that is used for the build
       "use": "@now/node"
     }
-  ]
+  ],
   "routes": [
     {
       // Specify which paths will route to a destination using a regex
@@ -15,4 +15,5 @@
       // Specify the paths' destination
       "dest": "index.js"
     }
+  ]
 }
