@@ -83,9 +83,8 @@ io.on('connection', function(socket) {
       });
 });
 
-console.log('Port process.env.PORT = ' + process.env.PORT);
-server.listen(process.env.PORT || 80, function() {        // Heroku dynamically assigns a port
-    console.log("Server running on heraku port or 80");
+server.listen(5000, function() {        // Port used by Vericel - Heroku has a different implementation
+    console.log("Server running on vercel on port 5000.");
 });
 
 function playerLooses(playerNb) {
